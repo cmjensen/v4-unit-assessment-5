@@ -37,8 +37,17 @@ module.exports = {
         }
       }
     },
-    createPost: (req, res) => {
-      //code here
+    createPost: async (req, res) => {
+      const db = req.app.get('db')
+      const { id } = req.session.user
+      const { title, img, content } = req.body
+      const date = new Date()
+      if( id ){
+        const newPost = await db.post.create_post([ id, title, img, content, date ])
+        return res.status(200)
+      } else {
+        return res.status(403).send('Login to create a post.')
+      }
     },
     readPost: (req, res) => {
       req.app.get('db').post.read_post(req.params.id)

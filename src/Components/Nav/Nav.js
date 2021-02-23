@@ -3,6 +3,9 @@ import axios from 'axios';
 import homeLogo from './../../assets/home_logo.png';
 import newLogo from './../../assets/new_logo.png';
 import logoutLogo from './../../assets/shut_down.png';
+import { Link, withRouter } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { updateUser, logoutUser } from '../../redux/reducer'
 import './Nav.css';
 
 class Nav extends Component {
@@ -19,28 +22,41 @@ class Nav extends Component {
 
   getUser() {
     axios.get('/api/auth/me')
-    .then(res => 'replace this string with something useful')
+    .then(res => {
+      this.props.updateUser(res.data)
+    }).catch( err => console.log( err ))
   }
   
   logout() {
     axios.post('/api/auth/logout')
-      .then(_ => 'replace this string with something else')
+      .then(_ => {
+        this.props.logoutUser()
+        this.props.history.push('/')
+      })
   }
   
   render() {
       return this.props.location.pathname !== '/' &&
         <div className='nav'>
           <div className='nav-profile-container'>
-            <div className='nav-profile-pic'></div>
-            <p>placeholder username</p>
+            <div className='nav-profile-pic' style={{backgroundImage: `url(${this.props.profile_pic})`}}></div>
+            <p>{this.props.username}</p>
           </div>
           <div className='nav-links'>
-            <img className='nav-img' src={homeLogo} alt='home' />
-            <img className='nav-img' src={newLogo} alt='new post' />
+            <Link to='/dash'><img className='nav-img' src={homeLogo} alt='home' /></Link>
+            <Link to='/form'><img className='nav-img' src={newLogo} alt='new post' /></Link>
           </div>
-          <img className='nav-img logout' src={logoutLogo} alt='logout' />
+          <Link to='/auth' onClick={this.logout}><img className='nav-img logout' src={logoutLogo} alt='logout' /></Link>
         </div>
   }
 }
 
-export default Nav;
+function mapStateToProps( state ){
+  const { username, profile_pic } = state
+  return {
+    username,
+    profile_pic
+  }
+}
+
+export default withRouter(connect(mapStateToProps, { updateUser, logoutUser })(Nav));

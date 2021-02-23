@@ -4,13 +4,13 @@ module.exports = {
     register: async ( req, res ) => {
         const db = req.app.get('db')
         const { username, password, profile_pic } = req.body
-        const [foundUser] = await db.create_user( username )
+        const [foundUser] = await db.user.find_user_by_username([ username ])
         if( foundUser ){
             return res.status(400).send('User already exists')
         }
         const salt = bcrypt.genSaltSync(10)
         let hash = bcrypt.hashSync( password, salt )
-        const [newUser] = await db.create_user([ username, hash, profile_pic ])
+        const [newUser] = await db.user.create_user([ username, hash, profile_pic ])
         req.session.user = {
             userId: newUser.id,
             username: newUser.username,
@@ -21,7 +21,7 @@ module.exports = {
     login: async ( req, res ) => {
         const db = req.app.get('db')
         const { username, password } = req.body
-        const [foundUser] = await db.create_user( username )
+        const [foundUser] = await db.user.find_user_by_username([ username ])
         if( !foundUser ){
             return res.status(400).send('Incorrect login credentials')
         }
